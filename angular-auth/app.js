@@ -7,8 +7,14 @@ const bodyParser   = require('body-parser');
 const layouts      = require('express-ejs-layouts');
 const mongoose     = require('mongoose');
 
+const session    = require('express-session');
+const passport   = require('passport');
 
 mongoose.connect('mongodb://localhost/angular-auth');
+
+
+const passportSetup = require('./config/passport');
+passportSetup(passport);
 
 const app = express();
 
@@ -28,8 +34,23 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(layouts);
 
+app.use(session({
+  secret: 'angular auth passport secret shh',
+  resave: true,
+  saveUninitialized: true,
+  cookie : { httpOnly: true, maxAge: 2419200000 }
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use((req, res, next) => {
+  res.sendfile(__dirname + '/public/index.html');
+}); 
 const index = require('./routes/index');
 app.use('/', index);
+const authRoutes = require('./routes/auth-routes');
+app.use('/', authRoutes);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
