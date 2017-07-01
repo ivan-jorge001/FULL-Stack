@@ -9,12 +9,12 @@ const mongoose     = require('mongoose');
 
 const session    = require('express-session');
 const passport   = require('passport');
+const passportSetup = require('./config/passport');
+passportSetup(passport);
 
 mongoose.connect('mongodb://localhost/angular-auth');
 
 
-const passportSetup = require('./config/passport');
-passportSetup(passport);
 
 const app = express();
 
@@ -40,17 +40,21 @@ app.use(session({
   saveUninitialized: true,
   cookie : { httpOnly: true, maxAge: 2419200000 }
 }));
-
 app.use(passport.initialize());
 app.use(passport.session());
 
+
 app.use((req, res, next) => {
   res.sendfile(__dirname + '/public/index.html');
-}); 
+});
 const index = require('./routes/index');
 app.use('/', index);
 const authRoutes = require('./routes/auth-routes');
 app.use('/', authRoutes);
+
+
+
+
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
